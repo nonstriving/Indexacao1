@@ -16,7 +16,7 @@ int main()
   char cep[11];
   char telefone[15];
 
-  int quant;
+  int quant = 2;
 
   if (fopen("/Users/samara/Documents/ORI/Indexacao1/dados.bin", "rb+") == NULL ||
       fopen("/Users/samara/Documents/ORI/Indexacao1/indicepri.bin", "rb+") == NULL ||
@@ -30,19 +30,23 @@ int main()
     if (dados == NULL || indicepri == NULL || indicesec == NULL)
     {
       printf("Erro");
+      return 0;
     }
 
     printf("Nro de registros: ");
-    scanf("%d", &quant);
 
     int i;
     for(i = 0; i < quant; i++)
     {
       printf("Pessoa # %d \n \n", i + 1);
 
+      printf("%ld", ftell(dados));
+
       printf("Nro de identificacao: ");
-      getchar();
+      //fflush(stdout);
+      //getchar();
       fgets(chave, 4, stdin);
+      //printf("%s\n",chave);
       fwrite(&chave, sizeof(chave), 1, dados);
 
       printf("Sobrenome: ");
@@ -86,11 +90,16 @@ int main()
 
     for(i = 0; i < quant; i++)
     {
+      char character;
       pos = i * 130;
       fseek(dados, pos, SEEK_SET);
-      fread(&chave, sizeof(chave), 1, dados);
-      fwrite(&chave, sizeof(chave), 1, indicepri);
+      printf("pointer position: %ld\n", ftell(dados));
+      fread(&character, sizeof(character), 1, dados);
+      fwrite(&character, sizeof(character), 1, indicepri);
       fwrite(&pos, sizeof(pos), 1, indicepri);
+      printf("quant: %d\n", quant);
+      printf("character: %c\n", character);
+      printf("pos: %d\n", pos);
     }
 
     fclose(dados);
@@ -129,7 +138,8 @@ int main()
 
     char* indice1 = (char*) malloc(tamanhopri);
     fseek(indicepri, 0, SEEK_SET);
-    fread(indice1, tamanhopri, 1, indicepri);
+    fread(indice1, tamanhopri, 10, indicepri);
+    printf("%s\n", indice1);
     fclose(indicepri);
 
     // Arquivo de indice secundario
@@ -140,11 +150,13 @@ int main()
     char* indice2 = (char*) malloc(tamanhosec);
     fseek(indicesec, 0, SEEK_SET);
     fread(indice2, tamanhosec, 1, indicesec);
+    printf("%s", indice2);
     fclose(indicesec);
 
     fseek(indicepri, 0, SEEK_SET);
     fseek(indicesec, 0, SEEK_SET);
 
+    /*
     char ch;
     while ( (ch = fgetc(indicepri)) != EOF )
     {
@@ -158,6 +170,7 @@ int main()
       fscanf(indicesec, "%c", &ch);
       fprintf(stdout, "%c", ch);
     }
+    */
 
   }
 
