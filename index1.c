@@ -148,12 +148,14 @@ int main()
     char ch;
     while ( (ch = fgetc(indicepri)) != EOF )
     {
+      fscanf(indicepri, "%c", &ch);
       fprintf(stdout, "%c", ch);
       fprintf(stdout, "\n");
     }
 
     while ( (ch = fgetc(indicesec)) != EOF )
     {
+      fscanf(indicesec, "%c", &ch);
       fprintf(stdout, "%c", ch);
     }
 
