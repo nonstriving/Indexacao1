@@ -30,7 +30,6 @@ void lerdados(FILE* dados)
   scanf("%d", &quant);
 
   int i;
-  char n = '\0';
   for(i = 0; i < quant; i++)
   {
     printf("Pessoa # %d \n \n", i + 1);
@@ -52,7 +51,7 @@ void lerdados(FILE* dados)
 
     printf("Primeiro nome: ");
     fgets(p.primeironome, 20, stdin);
-    fwrite(&p.primeironome, sizeof(p.primeironome), 20, dados);
+    fwrite(&p.primeironome, sizeof(char), 20, dados);
 
     printf("Endereco: ");
     fgets(p.endereco, 20, stdin);
@@ -76,7 +75,6 @@ void lerdados(FILE* dados)
 
     printf("\n");
   }
-  fwrite(&n, sizeof(char), 1, dados);
 }
 
 FILE * criarIndicePri(FILE *dados)
@@ -84,12 +82,12 @@ FILE * criarIndicePri(FILE *dados)
   FILE *indicepri;
   int i=0;
   int pos=0;
-  int read;
 
   indicepri = fopen("/Users/samara/Documents/ORI/Indexacao1/indicepri.txt", "w");
 
-  fwrite(&quant, sizeof(int), 1, indicepri);
-  while((read=fgetc(dados)) != EOF)
+  fprintf(indicepri, "%d", quant);
+
+  for(i=0;i<quant;i++)
   {
     pos=i*130;
     fseek(dados, pos, SEEK_SET);
@@ -98,8 +96,8 @@ FILE * criarIndicePri(FILE *dados)
     //RRN
     fwrite(&i, sizeof(int), 1, indicepri);
     fwrite(&p.chave, sizeof(char), 4, indicepri);
-    i++;
   }
+  fclose(indicepri);
 
   return indicepri;
 }
@@ -109,13 +107,12 @@ FILE * criarIndiceSec(FILE *dados)
   FILE *indicesec;
   int i=0;
   int pos=0;
-  int read;
 
-  indicesec = fopen("/Users/samara/Documents/ORI/Indexacao1/indicesec.txt", "r+");
+  indicesec = fopen("/Users/samara/Documents/ORI/Indexacao1/indicesec.txt", "w");
 
-  fwrite(&quant, sizeof(int), 1, indicesec);
+  fwrite(&quant, sizeof(int), 1, indicesec);//here
 
-  while((read=fgetc(dados)) != EOF)
+  for(i=0;i<quant;i++)
   {
     pos=i*130;
     fseek(dados, pos, SEEK_SET);
@@ -125,11 +122,10 @@ FILE * criarIndiceSec(FILE *dados)
     fseek(dados, pos, SEEK_SET);
     fread(&p.cidade, sizeof(char), 20, dados);
 
-    fwrite(&p.cidade, sizeof(char), 20, indicesec);
-    fwrite(&p.chave, sizeof(char), 4, indicesec);
-
-    i++;
+    fwrite(&p.cidade, sizeof(char), 20, indicesec);//here
+    fwrite(&p.chave, sizeof(char), 4, indicesec);//here
   }
+  fclose(indicesec);
 
   return indicesec;
 }
