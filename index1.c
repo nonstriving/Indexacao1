@@ -251,21 +251,24 @@ int main()
     
     // 4) Busca por valor do campo chave
     
-    while(escolha=="s")
-    printf("Buscar chave? (s/n)\n");
+    printf("Buscar chave primaria? (s/n)\n");
     scanf("%c", &escolha);
     
-    printf("Digite um valor existente: ");
-    scanf("%4s", &chave);
+    while(escolha=="s")
+    {
+      printf("Digite um valor de chave: ");
+      scanf("%4s", &chave);
     
-    boolean=buscaChavePri(Index1, nroRec1, chave);
+      boolean=buscaChavePri(Index1, nroRec1, chave);
     
-    if(boolean==0)
-      printf("Chave inexistente\n");
-    if(boolean==1)
-      printf("Chave existente\n");
-
-  
+      if(boolean==0)
+        printf("Chave inexistente\n");
+      if(boolean==1)
+        printf("Chave existente\n");
+      
+      printf("Buscar chave? (s/n)\n");
+      scanf("%c", &escolha);
+    }
   }
   return 0;
 }
