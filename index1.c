@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
+#define true 1
+#define false 0
 
 int quant=0;
 
@@ -94,7 +96,7 @@ FILE * criarIndicePri(FILE *dados)
     fread(&p.chave, sizeof(char), 4, dados);
 
     //RRN
-    fwrite(&i, sizeof(int), 1, indicepri);
+    fwrite(&i, sizeof(int), 1, indicepri); //fprintf?
     fwrite(&p.chave, sizeof(char), 4, indicepri);
   }
   fclose(indicepri);
@@ -130,13 +132,75 @@ FILE * criarIndiceSec(FILE *dados)
   return indicesec;
 }
 
+//new code
+char * loadIndicePri(FILE *indicepri, int *nroRec)
+{
+  nroRec=0;
+  int i=0;
+  int pos=0;
+  
+  fseek(indicepri, 0, SEEK_SET);
+  fscanf(indicepri, "%d", nroRec);
+  
+  char *Index1 = (char*) malloc(nroRec * (sizeof(int) + 4 * sizeof(char)));
+  
+  for(i=0;i<nroRec;i++)
+  {
+    pos=i*8;
+    fread(Index1[pos], sizeof(int), 1, indicepri);
+    pos=pos+4;
+    fread(Index1[pos], sizeof(char), 4, indicepri);
+  }
+  
+  return Index1;
+}
+
+char * loadIndiceSec(FILE *indicesec, int *nroRec)
+{
+  nroRec=0;
+  int i=0;
+  int pos=0;
+  
+  fseek(indicesec, 0, SEEK_SET);
+  fscanf(indicesec, "%d", nroRec);
+  
+  char *Index2 = (char*) malloc(nroRec * (20 * sizeof(char) + 4 * sizeof(char)));
+  
+  for(i=0;i<nroRec;i++)
+  {
+    pos=i*24;
+    fread(Index2[pos], sizeof(char), 20, indicesec);
+    pos=pos+20;
+    fread(Index2[pos], sizeof(char), 4, indicesec);
+  }
+  
+  return Index2;
+}
+
+int buscaChavePri(char *Index1, int nroRec, char chaveBus[4])
+{
+  int i=0;
+  int pos=0;
+  char chaveEnc[4];
+  
+  for(i=0;i<nroRec;i++)
+  {
+    pos=8;
+    chaveEnc=Index1[pos];
+    if(chaveEnc==chaveBus)
+      return true;
+  }
+  
+  return false;
+}
+
 int main()
 {
 
   FILE *dados;
   FILE *indicepri;
   FILE *indicesec;
-
+  
   if (fopen("/Users/samara/Documents/ORI/Indexacao1/dados.txt", "r+") == NULL ||
       fopen("/Users/samara/Documents/ORI/Indexacao1/indicepri.txt", "r+") == NULL ||
       fopen("/Users/samara/Documents/ORI/Indexacao1/indicesec.txt", "r+") == NULL)
@@ -161,108 +225,49 @@ int main()
   else
   {
     // Arquivos de indice ja existem
-    // Carregar arquivo de indice primario em memoria primaria
-
-
-    // Arquivo de indice primario
-    indicepri = fopen("/Users/samara/Documents/ORI/Indexacao1/indicepri.txt", "r+");
-    char* indice1 = (char*) malloc(quant * (sizeof(p.chave) + 2 * sizeof(char)));
-
-    char c;
-
-    int i = 0;
-
-    while(1) {
-      c = fgetc(indicepri);
-      if( feof(indicepri) ) {
-        break ;
-      }
-      indice1[i++] = c;
-      printf("%c", c);
-    }
-
-    i = i - 1;
-    indice1[i] = '\0';
-
-    fclose(indicepri);
-
-    // Arquivo de indice secundario
-    indicesec = fopen("/Users/samara/Documents/ORI/Indexacao1/indicesec.txt", "r+");
-    char* indice2 = (char*) malloc(quant * (sizeof(p.cidade) + sizeof(p.chave)));
-
-    i = 0;
-
-    while(1) {
-      c = fgetc(indicesec);
-      if( feof(indicesec) ) {
-        break ;
-      }
-      indice2[i++] = c;
-      printf("%c", c);
-    }
-
-    i = i - 1;
-    indice2[i] = '\0';
-
-    fclose(indicesec);
-
-    // 4) Busca pelo valor existente do campo pessoa.chave
-    // 5) Busca pelo campo pessoa.chave com valor nao existente
-
-    while(1)
+    // Carregar arquivos de indice em memoria primaria
+    
+    char chave[4];
+    char *Index1;
+    char *Index2;
+    char escolha;
+    int nroRec1;
+    int nroRec2;
+    int boolean;
+  
+    nroRec1=0;
+    nroRec2=0;
+    boolean = false;
+    escolha="s";
+    
+    indicepri=fopen("/Users/samara/Documents/ORI/Indexacao1/indicepri.txt", "r+");
+    indicesec=fopen("/Users/samara/Documents/ORI/Indexacao1/indicesec.txt", "r+");
+    
+    Index1=loadIndicePri(indicepri, &nroRec1);
+    Index2=loadIndiceSec(indeicesec, &nroRec2);
+    
+    printf("Indice primario: %s\n", Index1); 
+    printf("Indice secundario: %s\n", Index2); 
+    
+    // 4) Busca por valor do campo chave
+    
+    printf("Buscar chave primaria? (s/n)\n");
+    scanf("%c", &escolha);
+    
+    while(escolha=="s")
     {
-      int valor;
-      int valor2;
-
-      printf("Busca por valor do campo pessoa.chave:\n");
-      scanf("%d", &valor);
-
-      // Busca no vetor do arquivo de indice primario
-
-      int existe = 0;
-
-      for(int i = 0; i < quant; i++)
-      {
-        p.chave[0] = indice1[i * 6];
-        p.chave[1] = indice1[i * 6 + 1];
-        p.chave[2] = indice1[i * 6 + 2];
-        p.chave[3] = indice1[i * 6 + 3];
-
-        valor2 = p.chave[0] - '0';
-
-        if(valor == valor2)
-        {
-          valor = i;
-          existe = 1;
-        }
-      }
-
-      if(existe == 0)
-      {
-        printf("Valor nao existe\n");
-      }
-      else
-      {
-        dados = fopen("/Users/samara/Documents/ORI/Indexacao1/dados.txt", "r");
-        fseek(dados, valor * 130, SEEK_SET);
-        fread(&p.chave, sizeof(p.chave), 1, dados);
-        fread(&p.ultimonome, sizeof(p.ultimonome), 1, dados);
-        fread(&p.primeironome, sizeof(p.primeironome), 1, dados);
-        fread(&p.endereco, sizeof(p.endereco), 1, dados);
-        fread(&p.cidade, sizeof(p.cidade), 1, dados);
-        fread(&p.estado, sizeof(p.estado), 1, dados);
-        fread(&p.cep, sizeof(p.cep), 1, dados);
-        fread(&p.telefone, sizeof(p.telefone), 1, dados);
-
-        printf("%4s", p.chave);
-        printf("%20s", p.ultimonome);
-        printf("%20s", p.primeironome);
-        printf("%20s", p.endereco);
-        printf("%20s", p.cidade);
-        printf("%20s", p.estado);
-        printf("%11s", p.cep);
-        printf("%15s", p.telefone);
-      }
+      printf("Digite um valor de chave: ");
+      scanf("%4s", &chave);
+    
+      boolean=buscaChavePri(Index1, nroRec1, chave);
+    
+      if(boolean==0)
+        printf("Chave inexistente\n");
+      if(boolean==1)
+        printf("Chave existente\n");
+      
+      printf("Buscar chave? (s/n)\n");
+      scanf("%c", &escolha);
     }
   }
   return 0;
